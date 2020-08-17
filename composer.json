@@ -1,0 +1,41 @@
+{
+  "name": "tyler-king/serverless-cognito",
+  "description": "Laravel authentication using client cognito token",
+  "type": "library",
+  "version": "1.0.5",
+  "authors": [
+    {
+      "name": "tyler-king",
+      "email": "tylerking3719@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "TKing\\": "src/"
+    }
+  },
+  "require": {
+    "codercat/jwk-to-pem": "^0.0.3",
+    "firebase/php-jwt": "^5.2",
+    "illuminate/support": "^7.16",
+    "laravel/framework": "^7.16",
+    "miladrahimi/php-jwt": "dev-master"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/tyler-king/php-jwt.git"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "TKing\\ServerlessCognitoProvider"
+      ]
+    }
+  }
+}
