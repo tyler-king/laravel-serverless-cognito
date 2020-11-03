@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/login', function () {
 	$app_token = config("cognito.app_token");
+	$cognito_url = config("cognito.login_url");
+	if (!isset($app_token) || !isset($cognito_url)) {
+		return abort(500, "Missing Cognito configuration");
+	}
 	$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	$redirect_uri = str_replace("/login", "/profile", $actual_link);
 	$token = $_COOKIE['jwt_token'] ?? "";
@@ -11,7 +15,7 @@ Route::get('/login', function () {
 		if (app()->environment() === 'local') {
 			$redirect_uri = config("cognito.debug_redirect");
 		}
-		$cognito_url = config("cognito.login_url") . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
+		$cognito_url = $cognito_url . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
 		header("Location: " . $cognito_url);
 	} else {
 		header("Location: " .  $redirect_uri);
