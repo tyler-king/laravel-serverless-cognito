@@ -2,7 +2,7 @@
   "name": "tyler-king/serverless-cognito",
   "description": "Laravel authentication using client cognito token",
   "type": "library",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "authors": [
     {
       "name": "tyler-king",
@@ -11,7 +11,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "TKing\\ServerlessCognito": "app/"
+      "TKing\\ServerlessCognito\\": "app/"
     }
   },
   "require": {
