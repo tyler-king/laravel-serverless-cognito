@@ -41,7 +41,7 @@ class ServerlessCognitoProvider extends ServiceProvider
                 $token = $request->headers->get("authorization") ?? (($output['token_type'] ?? '') . " " . ($output['access_token'] ?? ''));
                 $tokenProps = Validator::validate($token);
             } catch (\Throwable $e) {
-                return abort(401);
+                return abort(401, $e->getMessage());
             }
             return new Cognito($tokenProps);
         });
