@@ -11,7 +11,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "TKing\\": "src/"
+      "App\\": "app/"
     }
   },
   "require": {
@@ -34,7 +34,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "TKing\\ServerlessCognitoProvider"
+        "App\\Providers\\ServerlessCognitoProvider"
       ]
     }
   }

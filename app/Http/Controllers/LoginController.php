@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Http\Controllers;
+
+class LoginController extends Controller
+{
+
+    public function login()
+    {
+        $app_token = config("cognito.app_token");
+        $cognito_url = config("cognito.login_url");
+        if (!isset($app_token) || !isset($cognito_url)) {
+            return abort(500, "Missing Cognito configuration");
+        }
+        $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $redirect_uri = str_replace("/login", "/profile", $actual_link);
+        $token = $_COOKIE['jwt_token'] ?? "";
+        if ($token == "") {
+            if (app()->environment() === 'local') {
+                $redirect_uri = config("cognito.debug_redirect");
+            }
+            $cognito_url = $cognito_url . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
+            header("Location: " . $cognito_url);
+        } else {
+            header("Location: " .  $redirect_uri);
+        }
+        exit();
+    }
+
+    public function showProfile()
+    {
+        $token = $_COOKIE['token'] ?? "";
+        if ($token !== "") {
+            setcookie("token", "");
+            setcookie("jwt_token", $token, null, null, null, null, true);
+        } else {
+            $token = $_COOKIE['jwt_token'] ?? "";
+            if ($token !== "") {
+                parse_str($_COOKIE["jwt_token"], $output);
+                if ($output['expires_in'] < date("U")) {
+                    //NOW expire token
+                    /*setcookie("jwt_token", "", null, null, null, null, true);
+                    $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+                    $redirect_uri = str_replace("/profile", "/login", $actual_link);
+                    header("Location: " .  $redirect_uri);
+                    exit();*/
+                }
+            }
+        }
+        return view('cognito::profile');
+    }
+
+    public function logout()
+    {
+        setcookie('token', "");
+        setcookie("jwt_token", "", null, null, null, null, true);
+        return view('cognito::login');
+    }
+}
