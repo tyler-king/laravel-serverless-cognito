@@ -10,7 +10,7 @@ use CoderCat\JWKToPEM\JWKConverter;
 
 class Validator
 {
-    public function validate(string $token)
+    public static function validate(string $token)
     {
         $region = config("cognito.region");
         if ($region == "local" && app()->isLocal()) {

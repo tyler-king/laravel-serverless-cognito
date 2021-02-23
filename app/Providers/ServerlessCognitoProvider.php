@@ -37,8 +37,8 @@ class ServerlessCognitoProvider extends ServiceProvider
         //NOW if token expired then redirect else
         Auth::viaRequest('cognito', function ($request) {
             try {
-                parse_str($_COOKIE["jwt_token"], $output);
-                $token = $request->headers->get("authorization") ?? ($output['token_type'] . " " . $output['access_token']);
+                parse_str($_COOKIE["jwt_token"] ?? '', $output);
+                $token = $request->headers->get("authorization") ?? (($output['token_type'] ?? '') . " " . ($output['access_token'] ?? ''));
                 $tokenProps = Validator::validate($token);
             } catch (\Throwable $e) {
                 return abort(401);
