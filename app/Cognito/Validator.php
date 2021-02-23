@@ -13,6 +13,9 @@ class Validator
     public function validate(string $token)
     {
         $region = config("cognito.region");
+        if ($region == "local" && app()->isLocal()) {
+            return ['sub' => 'guest']; //NOW add more
+        }
         $userPoolId = config("cognito.user_pool_id");
         $app_token = [config("cognito.app_token")];
 
