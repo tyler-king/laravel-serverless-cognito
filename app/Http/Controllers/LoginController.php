@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace TKing\ServerlessCognito\Http\Controllers;
 
 class LoginController extends Controller
 {

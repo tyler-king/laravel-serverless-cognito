@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Cognito;
+namespace TKing\ServerlessCognito\Cognito;
 
 use Illuminate\Support\Facades\Cache;
 use MiladRahimi\Jwt\Cryptography\Algorithms\Rsa\RS256Verifier;

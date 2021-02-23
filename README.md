@@ -3,7 +3,7 @@ Edit config/auth.php to include
 Add a provider:
 'cognito' => [
 'driver' => 'eloquent',
-'model' => App\Cognito::class,
+'model' => TKing\ServerlessCognito\Cognito::class,
 ]
 
 Add a guard:

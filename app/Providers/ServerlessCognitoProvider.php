@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Providers;
+namespace TKing\ServerlessCognito\Providers;
 
-use App\Cognito\Validator;
+use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,12 +27,12 @@ class ServerlessCognitoProvider extends ServiceProvider
     {
 
         $this->publishes([
-            __DIR__ . '/config/cognito.php' => config_path('cognito.php'),
+            $this->basePath('config/cognito.php') => config_path('cognito.php'),
         ]);
 
-        $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
+        $this->loadRoutesFrom($this->basePath('/routes/web.php'));
 
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'cognito');
+        $this->loadViewsFrom($this->basePath('/resources/views'), 'cognito');
         //NOW if token expired then redirect else
         Auth::viaRequest('cognito', function ($request) {
             try {
@@ -49,15 +49,20 @@ class ServerlessCognitoProvider extends ServiceProvider
         });
 
         $this->publishes([
-            __DIR__ . '/resources/views' => resource_path('views/vendor/cognito'),
+            $this->basePath('resources/views') => resource_path('views/vendor/cognito'),
         ]);
     }
 
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/config/cognito.php',
+            $this->basePath('config/cognito.php'),
             'cognito'
         );
+    }
+
+    private function basePath(string $path)
+    {
+        return __DIR__ . '/../../' . $path;
     }
 }
