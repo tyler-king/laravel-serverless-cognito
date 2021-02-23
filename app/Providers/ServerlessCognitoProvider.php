@@ -5,6 +5,7 @@ namespace TKing\ServerlessCognito\Providers;
 use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use TKing\ServerlessCognito\Cognito;
 
 class ServerlessCognitoProvider extends ServiceProvider
 {
