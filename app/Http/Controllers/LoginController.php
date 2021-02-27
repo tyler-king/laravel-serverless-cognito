@@ -2,58 +2,59 @@
 
 namespace TKing\ServerlessCognito\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 class LoginController extends Controller
 {
 
-    public function login()
+    public function login(Request $request)
     {
+        try {
+            if ($request->user('cognito')) {
+                return redirect('/user');
+            }
+        } catch (\Exception $e) {
+            //s
+        }
+
         $app_token = config("cognito.app_token");
         $cognito_url = config("cognito.login_url");
         if (!isset($app_token) || !isset($cognito_url)) {
             return abort(500, "Missing Cognito configuration");
         }
-        $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-        $redirect_uri = str_replace("/login", "/profile", $actual_link);
-        $token = $_COOKIE['jwt_token'] ?? "";
-        if ($token == "") {
-            if (app()->environment() === 'local') {
-                $redirect_uri = config("cognito.debug_redirect");
-            }
-            $cognito_url = $cognito_url . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
-            header("Location: " . $cognito_url);
-        } else {
-            header("Location: " .  $redirect_uri);
-        }
-        exit();
+
+        $redirect_uri = route('callback');
+        $cognito_url = $cognito_url . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
+        return redirect($cognito_url);
     }
 
-    public function showProfile()
+    public function hash(Request $request)
     {
-        $token = $_COOKIE['token'] ?? "";
+        return view('cognito::hash', ['callback' => "/" . $request->path()]);
+    }
+
+    public function readHash(Request $request)
+    {
+        $token = $request->header("x-auth-hash", '');
         if ($token !== "") {
-            setcookie("token", "");
-            setcookie("jwt_token", $token, null, null, null, null, true);
-        } else {
-            $token = $_COOKIE['jwt_token'] ?? "";
-            if ($token !== "") {
-                parse_str($_COOKIE["jwt_token"], $output);
-                if ($output['expires_in'] < date("U")) {
-                    //NOW expire token
-                    /*setcookie("jwt_token", "", null, null, null, null, true);
-                    $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-                    $redirect_uri = str_replace("/profile", "/login", $actual_link);
-                    header("Location: " .  $redirect_uri);
-                    exit();*/
-                }
-            }
+            $request->session()->put('jwt_token', $token);
         }
-        return view('cognito::profile');
+        return response('Logged In', 200, [
+            'Location' => "/login"
+        ]);
     }
 
-    public function logout()
+    public function user(Request $request)
     {
-        setcookie('token', "");
-        setcookie("jwt_token", "", null, null, null, null, true);
-        return view('cognito::login');
+        $user = $request->user('cognito');
+
+        return response($user, 200);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->session()->forget('jwt_token');
+        return redirect('/login');
     }
 }

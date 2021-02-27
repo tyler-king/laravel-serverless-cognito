@@ -2,8 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::namespace('TKing\ServerlessCognito\Http\Controllers')->group(function () {
-    Route::get('/login', 'LoginController@login');
-    Route::get('/profile', 'LoginController@showProfile');
-    Route::get('/logout', 'LoginController@logout');
+use TKing\ServerlessCognito\Http\Controllers\LoginController;
+
+Route::group(['middleware' => ['web']], function () {
+    Route::get('/login', [LoginController::class, 'login']);
+    Route::get('/login/callback', [LoginController::class, 'hash'])->name("callback");
+    Route::post('/login/callback', [LoginController::class, 'readHash']);
+    Route::get('/user', [LoginController::class, 'user']);
+    Route::get('/logout', [LoginController::class, 'logout']);
 });

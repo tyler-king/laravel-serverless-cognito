@@ -7,6 +7,7 @@ use MiladRahimi\Jwt\Cryptography\Algorithms\Rsa\RS256Verifier;
 use MiladRahimi\Jwt\Cryptography\Keys\RsaPublicKey;
 use MiladRahimi\Jwt\Parser;
 use CoderCat\JWKToPEM\JWKConverter;
+use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
 class Validator
 {
@@ -57,7 +58,7 @@ class Validator
         $parser = new Parser($verifier);
         $claims = $parser->parse($token);
         if ($claims['exp'] <= (new \DateTime('now', new \DateTimeZone("UTC")))->format("U")) {
-            throw new \Exception("Token has expired");
+            throw new TokenExpiredException;
         }
         if (!in_array($claims['token_use'], ['id', 'access'])) {
             throw new \Exception("Invalid token_use");

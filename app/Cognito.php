@@ -2,7 +2,10 @@
 
 namespace TKing\ServerlessCognito;
 
-class Cognito
+use Illuminate\Contracts\Auth\Authenticatable;
+use JsonSerializable;
+
+class Cognito implements Authenticatable, JsonSerializable
 {
 
     private $props = [];
@@ -15,5 +18,40 @@ class Cognito
     public function __get($property)
     {
         return $this->props[$property];
+    }
+
+    public function getAuthIdentifier()
+    {
+        return $this->sub;
+    }
+
+    public function getAuthIdentifierName()
+    {
+        return 'sub';
+    }
+
+    public function getAuthPassword()
+    {
+        return '';
+    }
+
+    public function getRememberToken()
+    {
+        return '';
+    }
+
+    public function getRememberTokenName()
+    {
+        return '';
+    }
+
+    public function setRememberToken($value)
+    {
+        //do nothing   
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->props;
     }
 }

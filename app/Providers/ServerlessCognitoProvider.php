@@ -4,8 +4,10 @@ namespace TKing\ServerlessCognito\Providers;
 
 use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use TKing\ServerlessCognito\Cognito;
+use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
 class ServerlessCognitoProvider extends ServiceProvider
 {
@@ -34,14 +36,23 @@ class ServerlessCognitoProvider extends ServiceProvider
         $this->loadRoutesFrom($this->basePath('/routes/web.php'));
 
         $this->loadViewsFrom($this->basePath('/resources/views'), 'cognito');
-        //NOW if token expired then redirect else
-        Auth::viaRequest('cognito', function ($request) {
+
+        Auth::viaRequest('cognito', function (Request $request) {
+            if (Auth::user()) {
+                return Auth::user();
+            }
             try {
-                parse_str($_COOKIE["jwt_token"] ?? '', $output);
-                $token = $request->headers->get("authorization") ?? (($output['token_type'] ?? '') . " " . ($output['access_token'] ?? ''));
+                parse_str($request->session()->get('jwt_token', ''), $output);
+                $from_session = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
+                $token = $request->headers->get("authorization", $from_session);
                 $tokenProps = Validator::validate($token);
+                //rmember changes inphp-jwt file. comment out openssl_free_key
+            } catch (TokenExpiredException $e) {
+                return redirect('/login'); //NOW add redirect key
             } catch (\Throwable $e) {
                 return abort(401, $e->getMessage());
+            } catch (\Throwable $e) {
+                return abort(500, $e->getMessage()); //NOW add bad failures like php ones
             }
             return new Cognito($tokenProps);
         });
