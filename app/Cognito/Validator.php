@@ -18,14 +18,16 @@ class Validator
             return ['sub' => 'guest']; //NOW add more
         }
         $userPoolId = config("cognito.user_pool_id");
-        $app_token = [config("cognito.app_token")];
+        if (empty($userPoolId)) {
+            throw new \Exception("Invalid configuration");
+        }
 
         $token = explode(" ", $token);
 
         if ($token[0] == "Bearer") {
             $token = $token[1];
         } else {
-            throw new \Exception("No Token provided");
+            throw new InvalidTokenException("No Token provided");
         }
 
         if (strlen($token) == 0) {
@@ -33,7 +35,7 @@ class Validator
         }
         $kid = json_decode(base64_decode(explode(".", $token)[0]), true)['kid'];
         if (!isset($kid)) {
-            throw new \Exception("Not cognito token");
+            throw new InvalidTokenException("Not cognito token");
         }
         $iss = "https://cognito-idp.$region.amazonaws.com/$userPoolId";
         $jwks = Cache::remember('cognito.jwks', now()->addMinutes(10), function () use ($iss) {
@@ -46,7 +48,7 @@ class Validator
         }))[0];
 
         if (!isset($jwk)) {
-            throw new \Exception("Invalid token");
+            throw new InvalidTokenException("Invalid token");
         }
         $jwkConverter = new JWKConverter();
         $PEM = $jwkConverter->toPEM($jwk);
@@ -56,21 +58,26 @@ class Validator
         // Parse the token
 
         $parser = new Parser($verifier);
-        $claims = $parser->parse($token);
-        if ($claims['exp'] <= (new \DateTime('now', new \DateTimeZone("UTC")))->format("U")) {
-            throw new TokenExpiredException;
+        try {
+            $claims = $parser->parse($token);
+        } catch (\Exception $e) {
+            throw new InvalidTokenException("Invalid token", 0, $e);
         }
         if (!in_array($claims['token_use'], ['id', 'access'])) {
-            throw new \Exception("Invalid token_use");
+            throw new InvalidTokenException("Invalid token_use");
         }
         if (isset($claims['aud'])) {
-            if (!in_array($claims['aud'], $app_token)) {
-                throw new \Exception("Invalid client");
+            $app_token = config("cognito.app_token");
+            if (empty($app_token)) {
+                throw new \Exception("Invalid configuration");
+            }
+            if (!in_array($claims['aud'], [$app_token])) {
+                throw new InvalidTokenException("Invalid client");
             }
         }
         if (isset($claims['iss'])) {
             if ($claims['iss'] !== $iss) {
-                throw new \Exception("Invalid token");
+                throw new InvalidTokenException("Invalid token");
             }
         }
         return $claims;

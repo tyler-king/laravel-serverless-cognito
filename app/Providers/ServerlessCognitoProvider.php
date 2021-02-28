@@ -5,8 +5,11 @@ namespace TKing\ServerlessCognito\Providers;
 use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use TKing\ServerlessCognito\Cognito;
+use TKing\ServerlessCognito\Cognito\InvalidTokenException;
 use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
 class ServerlessCognitoProvider extends ServiceProvider
@@ -42,17 +45,18 @@ class ServerlessCognitoProvider extends ServiceProvider
                 return Auth::user();
             }
             try {
-                parse_str($request->session()->get('jwt_token', ''), $output);
-                $from_session = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
-                $token = $request->headers->get("authorization", $from_session);
+                if ($request->ajax()) {
+                    $token = $request->headers->get("authorization", '');
+                } else {
+                    $cookie = $request->cookie("jwt_token", '');
+                    parse_str($cookie, $output);
+                    $token = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
+                }
                 $tokenProps = Validator::validate($token);
-                //rmember changes inphp-jwt file. comment out openssl_free_key
-            } catch (TokenExpiredException $e) {
-                return redirect('/login'); //NOW add redirect key
+            } catch (TokenExpiredException | InvalidTokenException $e) {
+                return null;
             } catch (\Throwable $e) {
-                return abort(401, $e->getMessage());
-            } catch (\Throwable $e) {
-                return abort(500, $e->getMessage()); //NOW add bad failures like php ones
+                return abort(500, $e->getMessage());
             }
             return new Cognito($tokenProps);
         });
@@ -68,7 +72,28 @@ class ServerlessCognitoProvider extends ServiceProvider
             $this->basePath('config/cognito.php'),
             'cognito'
         );
+
+        $auth = require($this->basePath('config/auth.php'));
+
+        $config = $this->app->make('config');
+
+        $config->set('auth.guards.cognito',  $auth['guards']['cognito']);
+        $config->set('auth.providers.cognito',  $auth['providers']['cognito']);
+
+        /** @var Router $router  */
+        $router = $this->app['router'];
+
+        $router->middlewareGroup('api.cognito', [
+            \App\Http\Middleware\EncryptCookies::class,
+            'throttle:60,1',
+            'auth.cognito:cognito',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
+
+        $router->aliasMiddleware('auth.cognito', \TKing\ServerlessCognito\Http\Middleware\Authenticate::class);
     }
+
+
 
     private function basePath(string $path)
     {

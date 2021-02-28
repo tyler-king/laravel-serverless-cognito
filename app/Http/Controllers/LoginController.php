@@ -2,20 +2,18 @@
 
 namespace TKing\ServerlessCognito\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 
 class LoginController extends Controller
 {
 
     public function login(Request $request)
     {
-        try {
-            if ($request->user('cognito')) {
-                return redirect('/user');
-            }
-        } catch (\Exception $e) {
-            //s
+
+        if ($request->user('cognito')) {
+            return redirect('/user');
         }
 
         $app_token = config("cognito.app_token");
@@ -26,7 +24,8 @@ class LoginController extends Controller
 
         $redirect_uri = route('callback');
         $cognito_url = $cognito_url . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
-        return redirect($cognito_url);
+        $cookie = Cookie::forget('jwt_token');
+        return redirect($cognito_url)->withoutCookie($cookie);
     }
 
     public function hash(Request $request)
@@ -37,24 +36,23 @@ class LoginController extends Controller
     public function readHash(Request $request)
     {
         $token = $request->header("x-auth-hash", '');
-        if ($token !== "") {
-            $request->session()->put('jwt_token', $token);
-        }
+        //NOW expires time, not sure if forever will work
+        $cookie = cookie()->forever('jwt_token', $token);
         return response('Logged In', 200, [
             'Location' => "/login"
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function user(Request $request)
     {
-        $user = $request->user('cognito');
+        $user = $request->user();
 
         return response($user, 200);
     }
 
     public function logout(Request $request)
     {
-        $request->session()->forget('jwt_token');
-        return redirect('/login');
+        $cookie = Cookie::forget('jwt_token');
+        return redirect('/login')->withoutCookie($cookie);
     }
 }
