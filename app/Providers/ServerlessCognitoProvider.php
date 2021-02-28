@@ -45,13 +45,10 @@ class ServerlessCognitoProvider extends ServiceProvider
                 return Auth::user();
             }
             try {
-                if ($request->ajax()) {
-                    $token = $request->headers->get("authorization", '');
-                } else {
-                    $cookie = $request->cookie("jwt_token", '');
-                    parse_str($cookie, $output);
-                    $token = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
-                }
+                $cookie = $request->cookie("jwt_token", '');
+                parse_str($cookie, $output);
+                $token = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
+                $token = $request->headers->get("authorization", $token);
                 $tokenProps = Validator::validate($token);
             } catch (TokenExpiredException | InvalidTokenException $e) {
                 return null;
