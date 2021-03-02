@@ -15,8 +15,8 @@ class AlterUsersTable extends Migration
     {
 
         Schema::table('users', function (Blueprint $table) {
-            $table->string('sub', 36)->unique()->index();
-            $table->json('scopes');
+            $table->string('sub', 36)->default('')->unique()->index();
+            $table->json('scopes')->nullable();
         });
     }
 
