@@ -67,4 +67,16 @@ class Cognito implements Authenticatable, JsonSerializable
     {
         return false;
     }
+
+    public static function guestAccount()
+    {
+        return new self(self::GUEST_PROPS);
+    }
+
+    public const GUEST_PROPS = [
+        'sub' => 'guest',
+        'given_name' => 'guest',
+        'family_name' => 'guest',
+        'email' => '',
+    ];
 }

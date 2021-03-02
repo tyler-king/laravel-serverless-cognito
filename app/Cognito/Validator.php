@@ -9,6 +9,7 @@ use MiladRahimi\Jwt\Parser;
 use CoderCat\JWKToPEM\JWKConverter;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Hash;
+use TKing\ServerlessCognito\Cognito;
 use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
 class Validator
@@ -17,7 +18,7 @@ class Validator
     {
         $region = config("cognito.region");
         if ($region == "local" && app()->isLocal()) {
-            return ['sub' => 'guest']; //NOW add more
+            return Cognito::GUEST_PROPS;
         }
         $userPoolId = config("cognito.user_pool_id");
         if (empty($userPoolId)) {
