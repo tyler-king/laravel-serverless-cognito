@@ -7,7 +7,6 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
 use TKing\ServerlessCognito\Cognito;
 use TKing\ServerlessCognito\Cognito\InvalidTokenException;
 use TKing\ServerlessCognito\Cognito\TokenExpiredException;
@@ -39,6 +38,8 @@ class ServerlessCognitoProvider extends ServiceProvider
         $this->loadRoutesFrom($this->basePath('/routes/web.php'));
 
         $this->loadViewsFrom($this->basePath('/resources/views'), 'cognito');
+
+        $this->loadMigrationsFrom($this->basePath('/database/migrations'));
 
         Auth::viaRequest('cognito', function (Request $request) {
             if (Auth::user()) {

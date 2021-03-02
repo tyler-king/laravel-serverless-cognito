@@ -7,11 +7,13 @@ use MiladRahimi\Jwt\Cryptography\Algorithms\Rsa\RS256Verifier;
 use MiladRahimi\Jwt\Cryptography\Keys\RsaPublicKey;
 use MiladRahimi\Jwt\Parser;
 use CoderCat\JWKToPEM\JWKConverter;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Hash;
 use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
 class Validator
 {
-    public static function validate(string $token)
+    public static function validate(string $fullToken)
     {
         $region = config("cognito.region");
         if ($region == "local" && app()->isLocal()) {
@@ -22,7 +24,7 @@ class Validator
             throw new \Exception("Invalid configuration");
         }
 
-        $token = explode(" ", $token);
+        $token = explode(" ", $fullToken);
 
         if ($token[0] == "Bearer") {
             $token = $token[1];
@@ -80,6 +82,28 @@ class Validator
                 throw new InvalidTokenException("Invalid token");
             }
         }
-        return $claims;
+        $sub = $claims['sub'];
+        $info = cache($sub);
+        if (!$info) {
+            $info = self::getUserInfo($fullToken);
+            cache([$sub => $info], now()->addMinutes(10));
+        }
+
+        return array_replace($info, $claims);
+    }
+
+    private static function getUserInfo(string $fullToken)
+    {
+
+        $client = new Client();
+        $url = config("cognito.login_url") . "oauth2/userInfo";
+        $response = $client->get($url, [
+            'headers' => [
+                'Authorization' => $fullToken
+            ]
+        ])->getBody()->getContents();
+        $response = json_decode($response, true);
+
+        return $response;
     }
 }

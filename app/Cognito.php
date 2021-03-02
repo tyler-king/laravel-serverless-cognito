@@ -2,6 +2,7 @@
 
 namespace TKing\ServerlessCognito;
 
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use JsonSerializable;
 
@@ -13,6 +14,13 @@ class Cognito implements Authenticatable, JsonSerializable
     public function __construct(array $props)
     {
         $this->props = $props;
+        $this->props['user'] = User::firstOrCreate(['sub' => $props['sub']], [
+            'name' => $this->given_name . " " . $this->family_name,
+            'email' => $this->email ?? '',
+            'sub' => $this->sub,
+            'scopes' => [],
+            'password' => 'not needed'
+        ]);
     }
 
     public function __get($property)
@@ -53,5 +61,10 @@ class Cognito implements Authenticatable, JsonSerializable
     public function jsonSerialize()
     {
         return $this->props;
+    }
+
+    public function isAdmin(): bool
+    {
+        return false;
     }
 }

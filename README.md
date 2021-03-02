@@ -1,18 +1,15 @@
-Edit config/auth.php to include
+Cognito vapor required also adding an A record of {login}.domain.com to the www.domain.com record created by vapor
 
-Add a provider:
-'cognito' => [
-'driver' => 'eloquent',
-'model' => TKing\ServerlessCognito\Cognito::class,
-]
+To use the middleware, use the 'api.cognito' group
 
-Add a guard:
-'cognito' => [
-'driver' => 'cognito',
-'provider' => 'cognito',
-'hash' => false,
-],
+All requests should specify Accept: appliction/json.
 
-Then in your middleware set auth:cognito
+Steps:
 
-cognito vapor required also adding an A record of .domain.com to the www.domain.com record created by vapor
+- Run migrations
+- in `App\Models\Users`
+
+`protected $casts = [ 'scopes'=> 'array' ]`
+
+- in `App\Models\Users`
+  `protected $fillable = [ 'scopes'=> 'sub', 'scopes' ]`

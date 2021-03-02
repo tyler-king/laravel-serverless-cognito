@@ -38,14 +38,12 @@ class LoginController extends Controller
         $token = $request->header("x-auth-hash", '');
         //NOW expires time, not sure if forever will work
         $cookie = cookie()->forever('jwt_token', $token);
-        return response('Logged In', 200, [
-            'Location' => "/login"
-        ])->withCookie($cookie);
+        return redirect('login')->withCookie($cookie);
     }
 
     public function user(Request $request)
     {
-        $user = $request->user();
+        $user = $request->user()->user;
 
         return response($user, 200);
     }
