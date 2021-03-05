@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace TKing\ServerlessCognito\Tests\Helpers;
+namespace TKing\ServerlessCognito\Testing\Helpers;
 
 use App\Models\User;
 use TKing\ServerlessCognito\Cognito\Validator;
 
 trait Cognito
 {
-    public function actingAsCognitoGuest(array $userProps = [])
+    public function actingAsCognitoGuest(array $userProps = []): User
     {
         $this->actingAs(self::createUserWithCognito([], $userProps));
     }
 
-    public function actingAsCognito(array $cognitoProps, array $userProps = [])
+    public function actingAsCognito(array $cognitoProps, array $userProps = []): User
     {
         $this->actingAs(self::createUserWithCognito($cognitoProps, $userProps));
     }
 
-    private static function createUserWithCognito(array $cognitoProps, array $userProps)
+    private static function createUserWithCognito(array $cognitoProps, array $userProps): User
     {
         $user = User::factory()->create($userProps);
         return $user->setCognito(array_replace(

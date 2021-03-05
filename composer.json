@@ -2,7 +2,7 @@
   "name": "tyler-king/serverless-cognito",
   "description": "Laravel authentication using client cognito token",
   "type": "library",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "authors": [
     {
       "name": "tyler-king",
@@ -14,11 +14,6 @@
       "TKing\\ServerlessCognito\\": "app/"
     }
   },
-  "autoload-dev": {
-    "psr-4": {
-        "TKing\\ServerlessCognito\\Tests\\": "tests/"
-    }
-},
   "require": {
     "codercat/jwk-to-pem": "^0.0.3",
     "firebase/php-jwt": "^5.2",
