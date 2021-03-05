@@ -7,7 +7,7 @@ All requests should specify Accept: appliction/json.
 Steps:
 
 - Run migrations
-- in `App\Models\Users`
+- in `App\Models\Users` set `use Cognito`
 
 `protected $casts = [ 'scopes'=> 'array' ]`
 
