@@ -11,12 +11,16 @@ trait Cognito
 {
     public function actingAsCognitoGuest(array $userProps = []): User
     {
-        $this->actingAs(self::createUserWithCognito([], $userProps));
+        $user = self::createUserWithCognito([], $userProps);
+        $this->actingAs($user);
+        return $user;
     }
 
     public function actingAsCognito(array $cognitoProps, array $userProps = []): User
     {
-        $this->actingAs(self::createUserWithCognito($cognitoProps, $userProps));
+        $user = self::createUserWithCognito($cognitoProps, $userProps);
+        $this->actingAs($user);
+        return $user;
     }
 
     private static function createUserWithCognito(array $cognitoProps, array $userProps): User
