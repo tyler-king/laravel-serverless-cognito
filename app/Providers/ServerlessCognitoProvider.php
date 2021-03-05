@@ -2,12 +2,12 @@
 
 namespace TKing\ServerlessCognito\Providers;
 
+use App\Models\User;
 use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Auth;
-use TKing\ServerlessCognito\Cognito;
 use TKing\ServerlessCognito\Cognito\InvalidTokenException;
 use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
@@ -42,7 +42,7 @@ class ServerlessCognitoProvider extends ServiceProvider
         $this->loadMigrationsFrom($this->basePath('/database/migrations'));
 
         Auth::viaRequest('cognito', function (Request $request) {
-            if (Auth::user()) {
+            if (Auth::user() && Auth::user()->hasCognito()) {
                 return Auth::user();
             }
             try {
@@ -51,12 +51,18 @@ class ServerlessCognitoProvider extends ServiceProvider
                 $token = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
                 $token = $request->headers->get("authorization", $token);
                 $tokenProps = Validator::validate($token);
+                return User::firstOrCreate(['sub' => $tokenProps['sub']], [
+                    'name' => ($tokenProps['given_name'] ?? '') . " " . ($tokenProps['family_name'] ?? ''),
+                    'email' => $tokenProps['email'] ?? '',
+                    'sub' => $tokenProps['sub'],
+                    'scopes' => [],
+                    'password' => 'not needed'
+                ])->setCognito($tokenProps);
             } catch (TokenExpiredException | InvalidTokenException $e) {
                 return null;
             } catch (\Throwable $e) {
                 return abort(500, $e->getMessage());
             }
-            return new Cognito($tokenProps);
         });
 
         $this->publishes([
@@ -76,7 +82,6 @@ class ServerlessCognitoProvider extends ServiceProvider
         $config = $this->app->make('config');
 
         $config->set('auth.guards.cognito',  $auth['guards']['cognito']);
-        $config->set('auth.providers.cognito',  $auth['providers']['cognito']);
 
         /** @var Router $router  */
         $router = $this->app['router'];

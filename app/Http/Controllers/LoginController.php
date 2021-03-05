@@ -2,7 +2,7 @@
 
 namespace TKing\ServerlessCognito\Http\Controllers;
 
-use Carbon\Carbon;
+use TKing\ServerlessCognito\Http\Transformers\UserTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
@@ -41,11 +41,10 @@ class LoginController extends Controller
         return redirect('login')->withCookie($cookie);
     }
 
-    public function user(Request $request)
+    public function user(Request $request, UserTransformer $userTransformer)
     {
-        $user = $request->user()->user;
-
-        return response($user, 200);
+        $user = $request->user();
+        return response($userTransformer->transform($user), 200);
     }
 
     public function logout(Request $request)

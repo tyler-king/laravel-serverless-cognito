@@ -14,11 +14,18 @@ use TKing\ServerlessCognito\Cognito\TokenExpiredException;
 
 class Validator
 {
+    public const GUEST_PROPS = [
+        'sub' => 'guest',
+        'given_name' => 'guest',
+        'family_name' => 'guest',
+        'email' => '',
+    ];
+
     public static function validate(string $fullToken)
     {
         $region = config("cognito.region");
         if ($region == "local" && app()->isLocal()) {
-            return Cognito::GUEST_PROPS;
+            return self::GUEST_PROPS;
         }
         $userPoolId = config("cognito.user_pool_id");
         if (empty($userPoolId)) {

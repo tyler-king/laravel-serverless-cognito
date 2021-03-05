@@ -2,81 +2,47 @@
 
 namespace TKing\ServerlessCognito;
 
-use App\Models\User;
-use Illuminate\Contracts\Auth\Authenticatable;
-use JsonSerializable;
 
-class Cognito implements Authenticatable, JsonSerializable
+trait Cognito
 {
+    private $cognito = [];
 
-    private $props = [];
-
-    public function __construct(array $props)
+    public function setCognito(array $props)
     {
-        $this->props = $props;
-        $this->props['user'] = User::firstOrCreate(['sub' => $props['sub']], [
-            'name' => $this->given_name . " " . $this->family_name,
-            'email' => $this->email ?? '',
-            'sub' => $this->sub,
-            'scopes' => [],
-            'password' => 'not needed'
-        ]);
+        $this->cognito = $props;
+
+        $update = false;
+        $name = ($props['given_name'] ?? '') . " " .  ($props['family_name'] ?? '');
+        if ($name !== $this->name) {
+            $this->name = $name;
+            $update = true;
+        }
+        $email = $props['email'] ?? '';
+        if ($email !== $this->email) {
+            $this->email = $email;
+        }
+        if ($props['sub'] !== $this->sub) {
+            $this->sub = $props['sub'];
+        }
+        $this->password = 'not needed';
+        if ($update) {
+            $this->save();
+        }
+        return $this;
     }
 
-    public function __get($property)
+    public function hasCognito(): bool
     {
-        return $this->props[$property];
+        return !empty($this->cognito['sub']);
     }
 
-    public function getAuthIdentifier()
+    public function getCognito(): array
     {
-        return $this->sub;
-    }
-
-    public function getAuthIdentifierName()
-    {
-        return 'sub';
-    }
-
-    public function getAuthPassword()
-    {
-        return '';
-    }
-
-    public function getRememberToken()
-    {
-        return '';
-    }
-
-    public function getRememberTokenName()
-    {
-        return '';
-    }
-
-    public function setRememberToken($value)
-    {
-        //do nothing   
-    }
-
-    public function jsonSerialize()
-    {
-        return $this->props;
+        return $this->cognito;
     }
 
     public function isAdmin(): bool
     {
         return false;
     }
-
-    public static function guestAccount()
-    {
-        return new self(self::GUEST_PROPS);
-    }
-
-    public const GUEST_PROPS = [
-        'sub' => 'guest',
-        'given_name' => 'guest',
-        'family_name' => 'guest',
-        'email' => '',
-    ];
 }

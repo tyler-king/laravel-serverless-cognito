@@ -4,13 +4,7 @@ return [
     'guards' => [
         'cognito' => [
             'driver' => 'cognito',
-            'provider' => 'cognito'
+            'provider' => 'users'
         ],
-    ],
-    'providers' => [
-        'cognito' => [
-            'driver' => 'eloquent',
-            'model' => TKing\ServerlessCognito\Cognito::class,
-        ],
-    ],
+    ]
 ];
