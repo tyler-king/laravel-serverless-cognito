@@ -30,15 +30,15 @@ class LoginController extends Controller
 
     public function hash(Request $request)
     {
-        return view('cognito::hash', ['callback' => "/" . $request->path()]);
+        $cookie = Cookie::forget('jwt_token');
+        return view('cognito::hash', ['callback' => "/" . $request->path()])->withoutCookie($cookie);
     }
 
     public function readHash(Request $request)
     {
         $token = $request->header("x-auth-hash", '');
-        //NOW expires time, not sure if forever will work
-        $cookie = cookie()->forever('jwt_token', $token);
-        return redirect('login')->withCookie($cookie);
+        $cookie = cookie()->make('jwt_token', $token, 5 * 365 * 24 * 60);
+        return redirect('/login')->withCookie($cookie);
     }
 
     public function user(Request $request, UserTransformer $userTransformer)
