@@ -7,9 +7,11 @@ All requests should specify Accept: appliction/json.
 Steps:
 
 - Run migrations
-- in `App\Models\Users` set `use Cognito`
+- in `App\Models\User`
+  - set `use Cognito`
+  - add to `protected $casts = [ 'scopes'=> 'array' ]`
+  - add to `protected $fillable = [ 'sub', 'scopes' ]`
 
-`protected $casts = [ 'scopes'=> 'array' ]`
-
-- in `App\Models\Users`
-  `protected $fillable = [ 'scopes'=> 'sub', 'scopes' ]`
+- in `Database\Factories\UserFactory::definition`
+  - add `'scopes' => []`
+  - add `'sub' => $this->faker->uuid` 
