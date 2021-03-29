@@ -14,8 +14,9 @@ class UserTransformer
         return [
             'name' => $user->name,
             'email' => $user->email,
-            'registeration_date' => $user->created_at->format('Y-m-d h:i:s'),
-            'cognito' => $user->getCognito()
+            'registration_date' => $user->created_at->format('Y-m-d h:i:s'),
+            'cognito' => $user->getCognito(),
+            'scopes' => $user->scopes ?? []
         ];
     }
 }
