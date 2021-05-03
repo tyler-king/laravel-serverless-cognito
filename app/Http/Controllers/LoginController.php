@@ -13,7 +13,12 @@ class LoginController extends Controller
     {
 
         if ($request->user('cognito')) {
-            return redirect('/user');
+            $redirect = $request->cookie('redirect', '');
+            if (!empty($redirect)) {
+                return redirect($redirect);
+            } else {
+                return redirect('/user');
+            }
         }
 
         $app_token = config("cognito.app_token");
@@ -21,11 +26,19 @@ class LoginController extends Controller
         if (!isset($app_token) || !isset($cognito_url)) {
             return abort(500, "Missing Cognito configuration");
         }
-
         $redirect_uri = route('callback');
         $cognito_url = $cognito_url . "login?response_type=token&client_id=$app_token&redirect_uri=$redirect_uri";
         $cookie = Cookie::forget('jwt_token');
-        return redirect($cognito_url)->withoutCookie($cookie);
+
+        if ($request->path() !== 'login' && !$request->expectsJson()) {
+            $full_url = $request->fullUrl();
+        }
+
+        $redirectCookie = cookie()->make('redirect', $full_url ?? '');
+
+        return view('cognito::login', [
+            'url' => $cognito_url,
+        ])->withoutCookie($cookie)->withCookie($redirectCookie);
     }
 
     public function hash(Request $request)
