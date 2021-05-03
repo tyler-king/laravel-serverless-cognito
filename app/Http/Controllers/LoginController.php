@@ -35,16 +35,13 @@ class LoginController extends Controller
         }
 
         $redirectCookie = cookie()->make('redirect', $full_url ?? '');
-
-        return view('cognito::login', [
-            'url' => $cognito_url,
-        ])->withoutCookie($cookie)->withCookie($redirectCookie);
+        return redirect($cognito_url)->withCookie($cookie)->withCookie($redirectCookie);
     }
 
     public function hash(Request $request)
     {
         $cookie = Cookie::forget('jwt_token');
-        return view('cognito::hash', ['callback' => "/" . $request->path()])->withoutCookie($cookie);
+        return view('cognito::hash', ['callback' => "/" . $request->path()])->withCookie($cookie);
     }
 
     public function readHash(Request $request)
@@ -63,6 +60,6 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         $cookie = Cookie::forget('jwt_token');
-        return redirect('/login')->withoutCookie($cookie);
+        return redirect('/login')->withCookie($cookie);
     }
 }
