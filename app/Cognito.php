@@ -41,6 +41,11 @@ trait Cognito
         return $this->cognito;
     }
 
+    public function getCognitoId(): string
+    {
+        return $this->cognito['sub'];
+    }
+
     public function isAdmin(): bool
     {
         return false;
