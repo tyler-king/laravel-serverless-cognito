@@ -7,6 +7,7 @@ use MiladRahimi\Jwt\Cryptography\Algorithms\Rsa\RS256Verifier;
 use MiladRahimi\Jwt\Cryptography\Keys\RsaPublicKey;
 use MiladRahimi\Jwt\Parser;
 use CoderCat\JWKToPEM\JWKConverter;
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Hash;
 use TKing\ServerlessCognito\Cognito;
@@ -107,14 +108,18 @@ class Validator
     private static function getUserInfo(string $fullToken)
     {
 
-        $client = new Client();
-        $url = config("cognito.login_url") . "oauth2/userInfo";
-        $response = $client->get($url, [
-            'headers' => [
-                'Authorization' => $fullToken
-            ]
-        ])->getBody()->getContents();
-        $response = json_decode($response, true);
+        try {
+            $client = new Client();
+            $url = config("cognito.login_url") . "oauth2/userInfo";
+            $response = $client->get($url, [
+                'headers' => [
+                    'Authorization' => $fullToken
+                ]
+            ])->getBody()->getContents();
+            $response = json_decode($response, true);
+        }   catch (Exception $exception) {
+            return [];
+        }
 
         return $response;
     }
