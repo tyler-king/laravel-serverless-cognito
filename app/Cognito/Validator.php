@@ -91,12 +91,12 @@ class Validator
             }
         }
         $sub = $claims['sub'];
+        if (isset($claims['given_name']) && isset($claims['family_name']) && isset($claims['email'])) { 
+            return $claims;
+        }
+
         $info = cache($sub);
-        if (!$info && 
-        !isset($claims['given_name'])&& 
-        !isset($claims['family_name']) &&
-        !isset($claims['email'])
-        ) {
+        if (!$info) {
             $info = self::getUserInfo($fullToken);
             cache([$sub => $info], now()->addMinutes(10));
         }
