@@ -24,11 +24,11 @@ class Validator
 
     public static function validate(string $fullToken)
     {
-        $region = config("cognito.region");
+        $region = config("cognito.cognito.region");
         if ($region == "local" && app()->isLocal()) {
             return self::GUEST_PROPS;
         }
-        $userPoolId = config("cognito.user_pool_id");
+        $userPoolId = config("cognito.cognito.user_pool_id");
         if (empty($userPoolId)) {
             throw new \Exception("Invalid configuration");
         }
@@ -78,7 +78,7 @@ class Validator
             throw new InvalidTokenException("Invalid token_use");
         }
         if (isset($claims['aud'])) {
-            $app_token = config("cognito.app_token");
+            $app_token = config("cognito.cognito.app_token");
             if (empty($app_token)) {
                 throw new \Exception("Invalid configuration");
             }
@@ -110,7 +110,7 @@ class Validator
 
         try {
             $client = new Client();
-            $url = config("cognito.login_url") . "oauth2/userInfo";
+            $url = config("cognito.cognito.login_url") . "oauth2/userInfo";
             $response = $client->get($url, [
                 'headers' => [
                     'Authorization' => $fullToken

@@ -6,5 +6,9 @@ return [
             'driver' => 'cognito',
             'provider' => 'users'
         ],
+        'firebase' => [
+            'driver' => 'firebase',
+            'provider' => 'users'
+        ],
     ]
 ];

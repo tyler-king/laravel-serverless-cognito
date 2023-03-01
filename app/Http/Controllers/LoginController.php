@@ -21,8 +21,8 @@ class LoginController extends Controller
             }
         }
 
-        $app_token = config("cognito.app_token");
-        $cognito_url = config("cognito.login_url");
+        $app_token = config("cognito.cognito.app_token");
+        $cognito_url = config("cognito.cognito.login_url");
         if (!isset($app_token) || !isset($cognito_url)) {
             return abort(500, "Missing Cognito configuration");
         }

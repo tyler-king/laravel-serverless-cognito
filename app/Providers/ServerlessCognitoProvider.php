@@ -2,6 +2,7 @@
 
 namespace TKing\ServerlessCognito\Providers;
 
+use App\Firebase\FirebaseToken;
 use App\Models\User;
 use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -65,6 +66,31 @@ class ServerlessCognitoProvider extends ServiceProvider
             }
         });
 
+        Auth::viaRequest('firebase', function (Request $request) {
+            if (Auth::user() && Auth::user()->hasCognito()) {
+                return Auth::user();
+            }
+            $token = $request->bearerToken();
+
+            try {
+                $tokenProps = (new FirebaseToken($token))->verify(
+                    config('cognito.firebase.project_id')
+                );
+
+                    return User::firstOrCreate(['email' => $tokenProps['email']], [
+                    'name' => ($tokenProps['display_name'] ?? ''),
+                    'email' => $tokenProps['email'] ?? '',
+                    'sub' => $tokenProps['sub'],
+                    'scopes' => [],
+                    'password' => 'not needed'
+                ])->setCognito($tokenProps);
+            } catch (TokenExpiredException | InvalidTokenException $e) {
+                return null;
+            } catch (\Throwable $e) {
+                return abort(500, $e->getMessage());
+            }
+        });
+
         $this->publishes([
             $this->basePath('resources/views') => resource_path('views/vendor/cognito'),
         ]);
@@ -82,6 +108,8 @@ class ServerlessCognitoProvider extends ServiceProvider
         $config = $this->app->make('config');
 
         $config->set('auth.guards.cognito',  $auth['guards']['cognito']);
+        $config->set('auth.guards.firebase',  $auth['guards']['firebase']);
+
 
         /** @var Router $router  */
         $router = $this->app['router'];
@@ -94,6 +122,15 @@ class ServerlessCognitoProvider extends ServiceProvider
         ]);
 
         $router->aliasMiddleware('auth.cognito', \TKing\ServerlessCognito\Http\Middleware\Authenticate::class);
+
+        $router->middlewareGroup('api.firebase', [
+            \App\Http\Middleware\EncryptCookies::class,
+            'throttle:60,1',
+            'auth.firebase:firebase',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
+
+        $router->aliasMiddleware('auth.firebase', \TKing\ServerlessCognito\Http\Middleware\Authenticate::class);
     }
 
 
