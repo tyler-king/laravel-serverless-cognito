@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Firebase;
+namespace TKing\ServerlessCognito\Firebase;
 
 use UnexpectedValueException;
 use Firebase\JWT\JWT;

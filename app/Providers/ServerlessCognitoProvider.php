@@ -2,7 +2,7 @@
 
 namespace TKing\ServerlessCognito\Providers;
 
-use App\Firebase\FirebaseToken;
+use TKing\ServerlessCognito\Firebase\FirebaseToken;
 use App\Models\User;
 use TKing\ServerlessCognito\Cognito\Validator;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
