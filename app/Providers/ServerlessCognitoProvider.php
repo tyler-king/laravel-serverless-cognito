@@ -77,13 +77,18 @@ class ServerlessCognitoProvider extends ServiceProvider
                     config('cognito.firebase.project_id')
                 );
 
-                    return User::firstOrCreate(['email' => $tokenProps['email']], [
-                    'name' => ($tokenProps['display_name'] ?? ''),
-                    'email' => $tokenProps['email'] ?? '',
-                    'sub' => $tokenProps['sub'],
+                    return User::firstOrCreate(['email' => $tokenProps->email], [
+                    'name' => ($tokenProps->display_name ?? ''),
+                    'email' => $tokenProps->email ?? '',
+                    'sub' => $tokenProps->sub,
                     'scopes' => [],
                     'password' => 'not needed'
-                ])->setCognito($tokenProps);
+                ])->setCognito([
+                    'given_name' => $tokenProps->display_name,
+                    'email' => $tokenProps->email,
+                    'sub' => $tokenProps->sub,
+                    'family_name' => $tokenProps->display_name,
+                ]);
             } catch (TokenExpiredException | InvalidTokenException $e) {
                 return null;
             } catch (\Throwable $e) {
