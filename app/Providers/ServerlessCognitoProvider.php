@@ -79,15 +79,15 @@ class ServerlessCognitoProvider extends ServiceProvider
 
                     return User::firstOrCreate(['email' => $tokenProps->email], [
                     'name' => ($tokenProps->display_name ?? ''),
-                    'email' => $tokenProps->email ?? '',
+                    'email' => $tokenProps->email,
                     'sub' => $tokenProps->sub,
                     'scopes' => [],
                     'password' => 'not needed'
                 ])->setCognito([
-                    'given_name' => $tokenProps->display_name,
+                    'given_name' => $tokenProps->display_name ?? '',
                     'email' => $tokenProps->email,
                     'sub' => $tokenProps->sub,
-                    'family_name' => $tokenProps->display_name,
+                    'family_name' => $tokenProps->display_name ?? '',
                 ]);
             } catch (TokenExpiredException | InvalidTokenException $e) {
                 return null;
