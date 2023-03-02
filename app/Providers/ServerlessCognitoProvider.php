@@ -52,7 +52,7 @@ class ServerlessCognitoProvider extends ServiceProvider
                 $token = ($output['token_type'] ?? '') . " " . ($output['access_token'] ?? '');
                 $token = $request->headers->get("authorization", $token);
                 $tokenProps = Validator::validate($token);
-                return User::firstOrCreate(['sub' => $tokenProps['sub']], [
+                return User::firstOrCreate(['email' => $tokenProps['email']], [
                     'name' => ($tokenProps['given_name'] ?? '') . " " . ($tokenProps['family_name'] ?? ''),
                     'email' => $tokenProps['email'] ?? '',
                     'sub' => $tokenProps['sub'],
