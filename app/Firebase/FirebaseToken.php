@@ -4,6 +4,7 @@ namespace TKing\ServerlessCognito\Firebase;
 
 use UnexpectedValueException;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -55,9 +56,15 @@ class FirebaseToken
      */
     public function verify(string $projectId): object
     {
-        $keys = $this->getPublicKeys();
+        $publicKeys = $this->getPublicKeys();
+        
+        // Convert public keys to Key objects for firebase/php-jwt v6+
+        $keys = [];
+        foreach ($publicKeys as $kid => $publicKey) {
+            $keys[$kid] = new Key($publicKey, 'RS256');
+        }
 
-        $payload = JWT::decode($this->token, $keys, self::ALLOWED_ALGOS);
+        $payload = JWT::decode($this->token, $keys);
 
         $this->validatePayload($payload, $projectId);
 
